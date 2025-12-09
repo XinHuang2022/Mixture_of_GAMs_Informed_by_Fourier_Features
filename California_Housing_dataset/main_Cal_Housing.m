@@ -4,10 +4,14 @@
     clear
 
     %% load housing.csv
-    Data_table = readtable( 'housing.csv' );
+	data_file = fullfile( pwd, 'data', 'housing.csv' );
+    Data_table = readtable( data_file );
     Data_array = table2array( Data_table( :, 1 : 9 ) );
 	Data_array = Data_array( ~any( isnan( Data_array ), 2 ), : );
 	J_no_nan = size( Data_array, 1 );
+	% Add path for helper functions
+	addpath( genpath( 'utilities' ) );
+
 	
 	%% Data processing to obtain mean value of rooms in each area
     ave_num_room = Data_array( :, 4 ) ./ Data_array( :, 7 );
@@ -375,73 +379,73 @@
 	
 	
     %% Plot the new version of empirical histogram with compass
-    density = ksdensity(omega_used_spat, omega_used_spat);  % local densities
-	th = prctile(density, 50);  % top 50% densest points
-	Omega_core = omega_used_spat(density > th, :);
+    density = ksdensity( omega_used_spat, omega_used_spat );  % local densities
+	th = prctile( density, 50 );  % top 50% densest points
+	Omega_core = omega_used_spat( density > th, : );
 
-	[~,~,V_core] = svd(Omega_core - mean(Omega_core,1),'econ');
-	v1_core = V_core(:,1);
+	[ ~,~,V_core ] = svd( Omega_core - mean( Omega_core, 1 ),'econ' );
+	v1_core = V_core( :, 1 );
 	v1 = -v1_core / norm( v1_core );
-	v2_core = V_core(:,2);
+	v2_core = V_core( :, 2 );
 	v2 = v2_core / norm( v2_core );	
 	
 	% --- Compute histogram ---
 	num_bins = 200;
-	[H, xedges, yedges] = histcounts2(omega_used_spat(:,1), omega_used_spat(:,2), num_bins);
-	H_normalized = H / sum(H(:));
+	[ H, xedges, yedges ] = histcounts2( omega_used_spat( :, 1 ), omega_used_spat( :, 2 ), num_bins );
+	H_normalized = H / sum( H(:) );
     % Compute bin centers (instead of edges)
-    x_centers = (xedges(1:end-1) + xedges(2:end)) / 2;
-    y_centers = (yedges(1:end-1) + yedges(2:end)) / 2;
-    [X, Y] = meshgrid(x_centers, y_centers);
+    x_centers = ( xedges( 1 : end - 1 ) + xedges( 2 : end ) ) / 2;
+    y_centers = ( yedges( 1 : end - 1 ) + yedges( 2 : end ) ) / 2;
+    [ X, Y ] = meshgrid( x_centers, y_centers );
     
     % Use half the range of the histogram domain
-	len = 0.5 * max( range(xedges), range(yedges) );
+	len = 0.5 * max( range( xedges ), range( yedges ) );
 
     threshold = 0;  
     H_thresholded = H_normalized;
-    H_thresholded(H_thresholded < threshold) = 0;
+    H_thresholded( H_thresholded < threshold ) = 0;
     
     % === Plot using SURF ===
     figure;
-    surf(X, Y, H_thresholded', 'EdgeColor', 'none');
-    view(2);  % top-down view (like heatmap)
+    surf( X, Y, H_thresholded', 'EdgeColor', 'none' );
+    view( 2 );  % top-down view (like heatmap)
     axis equal tight;
-    xlabel('$\omega_{\xi}$', 'Interpreter', 'latex');
-    ylabel('$\omega_{\eta}$', 'Interpreter', 'latex');
-    title('2D Histogram of Frequencies');
-    colormap(parula);
+    xlabel( '$\omega_{\xi}$', 'Interpreter', 'latex' );
+    ylabel( '$\omega_{\eta}$', 'Interpreter', 'latex' );
+    title( '2D Histogram of Frequencies' );
+    colormap( parula );
     colorbar;
     hold on
 
     % Create a small inset axes (normalized coordinates of the figure window)
-    ax_compass = axes('Position',[0.52 0.72 0.15 0.15]); 
-    hold(ax_compass,'on');
-    axis(ax_compass,'equal');
-    axis(ax_compass,'off');   % hide ticks
+    ax_compass = axes( 'Position',[ 0.52 0.72 0.15 0.15 ] ); 
+    hold( ax_compass,'on' );
+    axis( ax_compass,'equal' );
+    axis( ax_compass,'off' );   % hide ticks
 
     scale = 0.8;  % arrow length inside inset
     lw = 2;       % line width
     
-    % Plot v1 (red)
-    quiver(ax_compass, 0, 0,  0.4 * scale*v1(1),  0.4 * scale*v1(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0);
+    % Plot v1
+    quiver( ax_compass, 0, 0,  0.4 * scale*v1(1),  0.4 * scale*v1(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0 );
     
-    quiver(ax_compass, 0, 0, -scale*v1(1), -scale*v1(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8);
+    quiver( ax_compass, 0, 0, -scale*v1(1), -scale*v1(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8 );
     
-    % Plot v2 (cyan)
-    quiver(ax_compass, 0, 0,  0.4 * scale*v2(1),  0.4 * scale*v2(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0);
+    % Plot v2
+    quiver( ax_compass, 0, 0,  0.4 * scale*v2(1),  0.4 * scale*v2(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0 );
     
-    quiver(ax_compass, 0, 0, -0.45 * scale*v2(1), -0.45 * scale*v2(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8);
+    quiver( ax_compass, 0, 0, -0.45 * scale*v2(1), -0.45 * scale*v2(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8 );
     
     % Labels
-    text(scale*1.1*v1(1), scale*1.1*v1(2), '$v_1$', ...
-         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass);
+    text( scale*1.1*v1(1), scale*1.1*v1(2), '$v_1$', ...
+         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass );
     
-    text(scale*1.1*v2(1), scale*1.1*v2(2), '$v_2$', ...
-         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass);
+    text( scale*1.1*v2(1), scale*1.1*v2(2), '$v_2$', ...
+         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass );
 
     %% Plot the new version of the price data points with compass
     figure;
@@ -457,26 +461,26 @@
     axis equal;
     grid on;
     
-    % 1. Plot the California boundary (already in projected (xi, eta) coords)
-    plot(cal_xi, cal_eta, 'k-', 'LineWidth', 1.5);
+    % Plot the California boundary (already in projected (xi, eta) coords)
+    plot( cal_xi, cal_eta, 'k-', 'LineWidth', 1.5 );
     
-    % 2. Scatter plot of housing data
-    price = Data_array(:, 9);      % housing prices
+    % Scatter plot of housing data
+    price = Data_array( :, 9 );      % housing prices
     
     % Scatter with color mapping
-    scatter(xi, eta, 25, price, 'filled'); 
-    colormap(parula);   
+    scatter( xi, eta, 25, price, 'filled' ); 
+    colormap( parula );   
     colorbar;
 
-    % 3. Axis formatting
+    % Axis formatting
     axis equal;
     axis tight;
-    xlabel('$\xi$','Interpreter','latex','FontSize',14);
-    ylabel('$\eta$','Interpreter','latex','FontSize',14);
-    title('California Housing Prices with State Outline','Interpreter','latex','FontSize',14);
+    xlabel( '$\xi$', 'Interpreter', 'latex', 'FontSize', 14 );
+    ylabel( '$\eta$', 'Interpreter', 'latex', 'FontSize', 14 );
+    title( 'California Housing Prices with State Outline', 'Interpreter', 'latex', 'FontSize', 14 );
     
-    % 4. Improve aesthetics
-    set(gca,'FontSize',12);
+    % Improve aesthetics
+    set( gca, 'FontSize', 12 );
     grid off
     ax = gca;
     ax.YAxisLocation = 'left'; 
@@ -484,34 +488,34 @@
     ax.YRuler.SecondaryLabel.HorizontalAlignment = 'left';
 
     % Create a small inset axes (normalized coordinates of the figure window)
-    ax_compass = axes('Position',[0.52 0.66 0.18 0.18]); 
-    hold(ax_compass,'on');
-    axis(ax_compass,'equal');
-    axis(ax_compass,'off');   % hide ticks
+    ax_compass = axes( 'Position', [ 0.52 0.66 0.18 0.18 ] ); 
+    hold( ax_compass, 'on' );
+    axis( ax_compass, 'equal' );
+    axis( ax_compass, 'off' );   % hide ticks
 
     scale = 0.8;  % arrow length inside inset
     lw = 2;       % line width
     
-    % Plot v1 (red)
-    quiver(ax_compass, 0, 0,  0.4 * scale*v1(1),  0.4 * scale*v1(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0);
+    % Plot v1
+    quiver( ax_compass, 0, 0,  0.4 * scale*v1(1),  0.4 * scale*v1(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0 );
     
-    quiver(ax_compass, 0, 0, -scale*v1(1), -scale*v1(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8);
+    quiver( ax_compass, 0, 0, -scale*v1(1), -scale*v1(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8 );
     
-    % Plot v2 (cyan)
-    quiver(ax_compass, 0, 0,  0.4 * scale*v2(1),  0.4 * scale*v2(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0);
+    % Plot v2 
+    quiver( ax_compass, 0, 0,  0.4 * scale*v2(1),  0.4 * scale*v2(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0 );
     
-    quiver(ax_compass, 0, 0, -0.45 * scale*v2(1), -0.45 * scale*v2(2), 0, ...
-           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8);
+    quiver( ax_compass, 0, 0, -0.45 * scale*v2(1), -0.45 * scale*v2(2), 0, ...
+           'Color',[0.4, 0.55, 0.2],'LineWidth',lw,'MaxHeadSize',0.8 );
     
     % Labels
-    text(scale*1.1*v1(1), scale*1.1*v1(2), '$v_1$', ...
-         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass);
+    text( scale*1.1*v1(1), scale*1.1*v1(2), '$v_1$', ...
+         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass );
     
-    text(scale*1.1*v2(1), scale*1.1*v2(2), '$v_2$', ...
-         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass);
+    text( scale*1.1*v2(1), scale*1.1*v2(2), '$v_2$', ...
+         'Interpreter','latex','Color',[0.4, 0.55, 0.2],'FontSize',16,'Parent',ax_compass );
 
     %% Implementation of RFF model on the eight covariates
     % Determine the initial distribution of frequency parameters
@@ -753,8 +757,6 @@
     figure();
     imagesc( d_values, L_values, RMSE_grid / 1e5 );   % rows = L, cols = d
     colorbar;
-    % brewermap;  % Initialize if needed
-    % colormap( brewermap(64, 'Blues') );  % Use 64 shades of 'Blues'
     colormap( parula );                         % or try 'hot', 'cool', etc.
     
     xlabel( 'PCA dimension $d$' );
@@ -811,34 +813,34 @@
 	for feat = 1:d
 
 		% Create evaluation grid for feature 'feat'
-		x_feat_vals = linspace( min(x_data_train(:, feat)), ...
-								max(x_data_train(:, feat)), num_plot_point );
-		y_partial_vals = zeros(1, num_plot_point);
+		x_feat_vals = linspace( min( x_data_train( :, feat ) ), ...
+								max( x_data_train( :, feat ) ), num_plot_point );
+		y_partial_vals = zeros( 1, num_plot_point );
 
 		for np = 1:num_plot_point
 			
 			% Construct modified dataset
 			x_mod = x_data_train;
-			x_mod(:, feat) = x_feat_vals(np);
+			x_mod( :, feat ) = x_feat_vals( np );
 
 			% Recompute RFF-based mixture representation
-			Mix_mat = real( exp(1i * (x_mod * omega_used_comp')) .* beta_used_comp' );
+			Mix_mat = real( exp( 1i * ( x_mod * omega_used_comp' ) ) .* beta_used_comp' );
 			Mix_centered = Mix_mat - h_mean;
 			Reduce_dim = Mix_centered * V_mat;
-			Reduce_dim_white = Reduce_dim ./ std(Reduce_dim_mat_B, 0, 1);
+			Reduce_dim_white = Reduce_dim ./ std( Reduce_dim_mat_B, 0, 1 );
 
 			% Compute GMM responsibilities
-			Gamma_mat = posterior(gm, Reduce_dim_white);   % (J_train × num_clusters)
+			Gamma_mat = posterior( gm, Reduce_dim_white );   % (J_train × num_clusters)
 
 			% Predict with each GAM component
-			Y_pred_all = zeros(J_train, num_clusters);  % standardized scale
+			Y_pred_all = zeros( J_train, num_clusters );  % standardized scale
 
 			for ell = 1:num_clusters
-				total_pred = zeros(J_train, 1);
+				total_pred = zeros( J_train, 1 );
 				f_list = gam_models_list{ell};
 
 				for j = 1:d
-					x_feature_vals = x_mod(:, j);
+					x_feature_vals = x_mod( :, j );
 					Phi_j = build_bspline_basis( ...
 								x_feature_vals, ...
 								f_list{j}.full_knots, ...
@@ -851,11 +853,11 @@
 			end
 
 			% Final MGAM mixture prediction
-			y_std = sum(Gamma_mat .* Y_pred_all, 2);     % standardized
+			y_std = sum( Gamma_mat .* Y_pred_all, 2 );     % standardized
 			y_orig = y_std * sigma_y + mu_y;             % original scale
 
 			% PDP value = mean prediction
-			y_partial_vals(np) = mean(y_orig);
+			y_partial_vals( np ) = mean( y_orig );
 
 		end
 
@@ -863,12 +865,12 @@
         figure; figure_counter = figure_counter + 1;
     
         % Transform x-axis to original scale
-        x_feat_vals_orig = x_feat_vals * sigma_x_store(feat) + mu_x_store(feat);
+        x_feat_vals_orig = x_feat_vals * sigma_x_store( feat ) + mu_x_store( feat );
     
-        plot(x_feat_vals_orig, y_partial_vals, 'LineWidth', 2);
-        xlabel([feature_names{feat}, ' (original scale)']);
-        ylabel('Predicted y (original scale)');
-        title(['MGAM Partial Dependence: ', feature_names{feat}]);
+        plot( x_feat_vals_orig, y_partial_vals, 'LineWidth', 2 );
+        xlabel( [feature_names{feat}, ' (original scale)'] );
+        ylabel( 'Predicted y (original scale)' );
+        title( ['MGAM Partial Dependence: ', feature_names{feat}] );
         grid on;
     
     end

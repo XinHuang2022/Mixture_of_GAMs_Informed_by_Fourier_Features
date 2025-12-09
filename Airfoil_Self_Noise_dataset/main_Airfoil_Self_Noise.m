@@ -2,10 +2,14 @@
     clear 
 
 	%% Preload data
-	Airfoil_array = readmatrix( 'airfoil_self_noise.dat', 'FileType', 'text' );
+	data_file = fullfile( pwd, 'data', 'airfoil_self_noise.dat' );
+	Airfoil_array = readmatrix( data_file, 'FileType', 'text' );
 	Airfoil_array = Airfoil_array( ~any( isnan( Airfoil_array ), 2 ), : );
     Airfoil_array( :, 1 ) = log( Airfoil_array( :, 1 ) );    % Logarithmic-transform on the frequency variable
 	J = size( Airfoil_array, 1 );
+	% Add path for helper functions
+	addpath( genpath( 'utilities' ) );
+	
 
 	rng( 127 );
 	rand_ind = randperm( J );
@@ -123,60 +127,60 @@
 
     %% Partial Dependence Plots for RFF regression model with resampled Fourier features
     feature_names = { ...
-        'Frequency (Hz)', ...              % Feature 1 (log-transformed)
+        'Acoustic Frequency (Hz)', ...              % Feature 1 (log-transformed)
         'Angle of Attack', ...
         'Chord Length', ...
         'Free-stream Velocity', ...
         'Suction-side Displacement Thickness' };
     
     num_plot = 30;      % grid resolution for PDP
-    N = size(X_train_norm, 1);
+    N = size( X_train_norm, 1 );
     figure_counter = 1;
     
     for feat = 1:5
     
         % PDP evaluation grid on normalized scale
-        x_min = min(X_train_norm(:, feat));
-        x_max = max(X_train_norm(:, feat));
-        x_feat_grid = linspace(x_min, x_max, num_plot);
+        x_min = min( X_train_norm( :, feat ) );
+        x_max = max( X_train_norm( :, feat ) );
+        x_feat_grid = linspace( x_min, x_max, num_plot );
     
-        y_partial = zeros(1, num_plot);
+        y_partial = zeros( 1, num_plot );
     
         for np = 1:num_plot
     
             % clamp feature feat to grid value
             X_mod = X_train_norm;
-            X_mod(:, feat) = x_feat_grid(np);
+            X_mod( :, feat ) = x_feat_grid( np );
     
             % RFF feature construction
             % RFF feature for each sample: real(exp(i x^T w)) * beta
-            Z = real( exp( 1i * (X_mod * omega_used') ) * beta_used );   % N × 1
+            Z = real( exp( 1i * ( X_mod * omega_used' ) ) * beta_used );   % N × 1
     
             % rescale y back to original scale
             y_mod = Z * sigma_y + mu_y;
     
             % PDP value = mean prediction
-            y_partial(np) = mean(y_mod);
+            y_partial( 1, np ) = mean( y_mod );
         end
     
         % Plot PDP
         figure(); figure_counter = figure_counter + 1;
         hold on
         % Convert x-axis back to ORIGINAL scale
-        x_feat_orig = x_feat_grid * sigma_x(feat) + mu_x(feat);
+        x_feat_orig = x_feat_grid * sigma_x( feat ) + mu_x( feat );
     
         if feat == 1
             % Feature 1 = frequency (log-transformed)
-            freq_Hz = exp(x_feat_orig);    % convert from log-scale
-            semilogx(freq_Hz, y_partial, 'LineWidth', 2);
-            xlabel('Frequency (Hz) [original scale]');
+            freq_Hz = exp( x_feat_orig );    % convert from log-scale
+            semilogx( freq_Hz, y_partial, 'LineWidth', 2 );
+            xlabel( 'Frequency (Hz) [original scale]' );
         else
-            plot(x_feat_orig, y_partial, 'LineWidth', 2);
-            xlabel(feature_names{feat});
+            plot( x_feat_orig, y_partial, 'LineWidth', 2 );
+            xlabel( feature_names{feat} );
         end
     
-        ylabel('Predicted SPL (dB)');
-        title(['RFF Partial Dependence: ', feature_names{feat}]);
+        ylabel( 'Predicted SPL (dB)' );
+        title( ['RFF Partial Dependence: ', feature_names{feat}] );
         grid on;
 
     end
@@ -197,52 +201,49 @@
 	for feat = 1:5
 
 		% Create grid in normalized feature space
-		x_min = min(X_train_norm(:, feat));
-		x_max = max(X_train_norm(:, feat));
-		x_feat_grid = linspace(x_min, x_max, num_plot);
+		x_min = min( X_train_norm( :, feat ) );
+		x_max = max( X_train_norm( :, feat ) );
+		x_feat_grid = linspace( x_min, x_max, num_plot );
 
-		y_partial = zeros(1, num_plot);
+		y_partial = zeros( 1, num_plot );
 
 		for np = 1:num_plot
 
 			% Clamp feature feat to grid value
 			X_mod = X_train_norm;
-			X_mod(:, feat) = x_feat_grid(np);
+			X_mod( :, feat ) = x_feat_grid( np );
 
 			% Compute RFF reduced representation
-			Mix_mat = real( exp(1i * (X_mod * omega_used')) .* beta_used' );
+			Mix_mat = real( exp( 1i * ( X_mod * omega_used' ) ) .* beta_used' );
 			Mix_centered = Mix_mat - h_mean;
 			Reduce_dim = Mix_centered * V;
 			Reduce_dim_white = Reduce_dim ./ std_B;
 
 			% GMM responsibilities
-			Gamma_mat = posterior(gm, Reduce_dim_white);   % (N_train × num_clusters)
+			Gamma_mat = posterior( gm, Reduce_dim_white );   % (N_train × num_clusters)
 
 			% Predict using each GAM component
-			N_train = size(X_train_norm,1);
-			Y_pred_cluster = zeros(N_train, num_clusters);
+			N_train = size( X_train_norm, 1 );
+			Y_pred_cluster = zeros( N_train, num_clusters );
 
 			for ell = 1:num_clusters
-				total_pred = zeros(N_train,1);
+				total_pred = zeros( N_train, 1 );
 				f_list = gam_models_list{ell};
 
 				for j = 1:5
-					Phi_j = build_bspline_basis( ...
-								X_mod(:, j), ...
-								f_list{j}.full_knots, ...
-								3 );
+					Phi_j = build_bspline_basis( X_mod( :, j ), f_list{j}.full_knots, 3 );
 					total_pred = total_pred + Phi_j * f_list{j}.theta;
 				end
 
-				Y_pred_cluster(:, ell) = alpha_vals(ell) + total_pred;
+				Y_pred_cluster( :, ell ) = alpha_vals( ell ) + total_pred;
 			end
 
 			% Mixture prediction, unscale to original y
-			y_std = sum(Gamma_mat .* Y_pred_cluster, 2);
+			y_std = sum( Gamma_mat .* Y_pred_cluster, 2 );
 			y_orig = y_std * sigma_y + mu_y;
 
 			% PDP value = mean prediction over all samples
-			y_partial(np) = mean(y_orig);
+			y_partial( np ) = mean( y_orig );
 
 		end
 
@@ -250,20 +251,20 @@
 		figure(); figure_counter = figure_counter + 1;
 
 		% Convert x-axis back to original scale
-		x_feat_orig = x_feat_grid * sigma_x(feat) + mu_x(feat);
+		x_feat_orig = x_feat_grid * sigma_x( feat ) + mu_x( feat );
 
 		if feat == 1
 			% Frequency was log-transformed → convert back
-			freq_Hz = exp(x_feat_orig);
-			semilogx(freq_Hz, y_partial, 'LineWidth', 2);
-			xlabel('Frequency (Hz)  [original scale]');
+			freq_Hz = exp( x_feat_orig );
+			semilogx( freq_Hz, y_partial, 'LineWidth', 2 );
+			xlabel( 'Frequency (Hz)  [original scale]' );
 		else
-			plot(x_feat_orig, y_partial, 'LineWidth', 2);
-			xlabel(feature_names{feat});
+			plot( x_feat_orig, y_partial, 'LineWidth', 2 );
+			xlabel( feature_names{feat} );
 		end
 
-		ylabel('Predicted Sound Pressure Level (dB)');
-		title(['Partial Dependence on ', feature_names{feat}]);
+		ylabel( 'Predicted Sound Pressure Level (dB)' );
+		title( ['Partial Dependence on ', feature_names{feat}] );
 		grid on;
 
 	end
@@ -276,13 +277,11 @@
 	tol = 1e-3;
 
 	[ alpha_global, f_list_global, ~ ] = ...
-		fit_gam_backfitting( X_train_norm, y_train_norm, ...
-							 max_iters, smoothing_param, ...
-							 num_knots, degree_gam, tol );
+		fit_gam_backfitting( X_train_norm, y_train_norm, max_iters, smoothing_param, num_knots, degree_gam, tol );
 							 
 	% Partial Dependence for Global GAM
 	feature_names = { ...
-		'Frequency (Hz)', ...
+		'Acoustic Frequency (Hz)', ...
 		'Angle of Attack', ...
 		'Chord Length', ...
 		'Free-stream Velocity', ...
@@ -290,29 +289,26 @@
 
 	num_plot = 30;
 	figure_counter = 1;
-	N = size(X_train_norm, 1);
+	N = size( X_train_norm, 1 );
 
 	for feat = 1:5
 
 		% Create grid in normalized scale
-		x_min = min(X_train_norm(:, feat));
-		x_max = max(X_train_norm(:, feat));
-		x_feat_grid = linspace(x_min, x_max, num_plot);
+		x_min = min( X_train_norm( :, feat ) );
+		x_max = max( X_train_norm( :, feat ) );
+		x_feat_grid = linspace( x_min, x_max, num_plot );
 
-		y_pdp = zeros(1, num_plot);
+		y_pdp = zeros( 1, num_plot );
 
 		for np = 1:num_plot
 			% Clamp feature to grid value
 			X_mod = X_train_norm;
-			X_mod(:, feat) = x_feat_grid(np);
+			X_mod( :, feat ) = x_feat_grid( np );
 
 			% Evaluate the global GAM on X_mod
-			y_std = alpha_global * ones(N, 1);
+			y_std = alpha_global * ones( N, 1 );
 			for j = 1:5
-				Phi_j = build_bspline_basis( ...
-					X_mod(:, j), ...
-					f_list_global{j}.full_knots, ...
-					degree_gam );
+				Phi_j = build_bspline_basis( X_mod( :, j ), f_list_global{j}.full_knots, degree_gam );
 				y_std = y_std + Phi_j * f_list_global{j}.theta;
 			end
 
@@ -320,7 +316,7 @@
 			y_orig = y_std * sigma_y + mu_y;
 
 			% Step 4: PDP value
-			y_pdp(np) = mean(y_orig);
+			y_pdp( np ) = mean( y_orig );
 		end
 
 		% Plotting
@@ -328,20 +324,20 @@
 		figure(); figure_counter = figure_counter + 1;
 
 		% Convert normalized x to original scale
-		x_feat_orig = x_feat_grid * sigma_x(feat) + mu_x(feat);
+		x_feat_orig = x_feat_grid * sigma_x( feat ) + mu_x( feat );
 
 		if feat == 1
 			% Frequency was log-transformed → back-transform
-			freq_Hz = exp(x_feat_orig);
-			semilogx(freq_Hz, y_pdp, 'LineWidth', 2);
-			xlabel('Frequency (Hz) [original scale]');
+			freq_Hz = exp( x_feat_orig );
+			semilogx( freq_Hz, y_pdp, 'LineWidth', 2 );
+			xlabel( 'Frequency (Hz) [original scale]' );
 		else
-			plot(x_feat_orig, y_pdp, 'LineWidth', 2);
-			xlabel(feature_names{feat});
+			plot( x_feat_orig, y_pdp, 'LineWidth', 2 );
+			xlabel( feature_names{feat} );
 		end
 
-		ylabel('Predicted SPL (dB)');
-		title(['Global GAM Partial Dependence: ', feature_names{feat}]);
+		ylabel( 'Predicted SPL (dB)' );
+		title( ['Global GAM Partial Dependence: ', feature_names{feat}] );
 		grid on;
 
 	end
