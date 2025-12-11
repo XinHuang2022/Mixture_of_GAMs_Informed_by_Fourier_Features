@@ -81,8 +81,8 @@ We also analyze the learned spatial frequencies using a density-weighted PCA, re
 
 ---
 
-## 4. Running the Experiments
-The numerical experiments on the California Housing dataset can be performed by navigating to the corresponding directory and executing the main script:
+## 4. Running the Numerical Experiments
+The numerical implementations of the proposed Mixture-of-GAMs framework on the California Housing dataset can be performed by navigating to the corresponding directory and executing the main script:
 
 ```bash
 cd California_Housing_dataset/matlab
