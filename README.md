@@ -1,5 +1,5 @@
 
-# Resampling-Based Random Fourier Features and Mixture-of-GAMs
+# Cluster-Based Generalized Additive Models Informed by Random Fourier Features
 
 ## 1. Overview
 This repository contains the MATLAB implementation of a resampling-based Random Fourier Feature (RFF) method and the corresponding Mixture-of-Generalized Additive Models (Mixture-of-GAMs) framework for regression tasks. The goal is to combine kernel-inspired feature learning with interpretable local models to improve predictive performance while retaining explainability.
