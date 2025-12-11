@@ -95,7 +95,7 @@
 		idx_ell = find( idx == ell );
 		X_ell = X_train_norm( idx_ell, : );
 		y_ell = y_train_norm( idx_ell );
-		[ alpha_ell, f_list_ell, ~ ] = fit_gam_backfitting( X_ell, y_ell, 50, 0.1, 300, 3, 1e-3 );
+		[ alpha_ell, f_list_ell, ~ ] = fit_gam_backfitting( X_ell, y_ell, 10, 0.1, 300, 3, 1e-3 );
 		gam_models_list{ell} = f_list_ell;
 		alpha_vals( 1, ell ) = alpha_ell;
 	end
@@ -270,7 +270,7 @@
 	end
 	
 	%% === Fit a global GAM on the full normalized training dataset ===
-	max_iters = 50;
+	max_iters = 10;
 	smoothing_param = 0.1;
 	num_knots = 300;
 	degree_gam = 3;

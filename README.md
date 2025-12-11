@@ -2,20 +2,18 @@
 # Resampling-Based Random Fourier Features and Mixture-of-GAMs
 
 ## 1. Overview
-This repository contains the MATLAB implementation of a resampling-based Random Fourier Feature (RFF) method and the corresponding Mixture-of-Generalized Additive Models (Mixture-of-GAMs) framework. The goal is to combine kernel-inspired feature learning with interpretable local models to improve predictive performance while retaining transparency.
-
-The method is applied to two regression datasets:
-- **California Housing**
-- **NASA Airfoil Self-Noise**
+This repository contains the MATLAB implementation of a resampling-based Random Fourier Feature (RFF) method and the corresponding Mixture-of-Generalized Additive Models (Mixture-of-GAMs) framework for regression tasks. The goal is to combine kernel-inspired feature learning with interpretable local models to improve predictive performance while retaining explainability.
 
 The code implements:
-- Adaptive resampling of Fourier frequencies  
-- PCA extraction of learned spatial structure  
-- Gaussian mixture clustering  
-- Cluster-wise GAM fitting with smooth components  
-- Mixture prediction using posterior responsibilities  
+- **Adaptive resampling of Fourier frequencies**  
+- **PCA extraction of learned spatial structure**  
+- **Gaussian mixture model for soft clustering**  
+- **Cluster-wise GAM fitting with smooth components**  
+- **Mixture prediction using posterior responsibilities**  
 
-This repository focuses on the *core MATLAB implementation*. Baseline models and Python notebooks may be added later.
+The method is applied to two regression datasets:
+- California Housing
+- NASA Airfoil Self-Noise
 
 ---
 
@@ -37,21 +35,74 @@ The end-to-end workflow consists of the following steps:
 5. **Predict with Mixture-of-GAMs**  
    Final predictions are formed by weighting cluster-specific GAM outputs by their posterior responsibilities.
 
-If included, the workflow diagram appears below:
+The overall proposed workflow can be visually illustrated with the following graphical diagram Figure 1.
 
 ![Workflow](docs/figures/Workflow_diagram.png)
+<p align="center" style="font-size: 115%;">
+  <strong>Figure 1.</strong> Diagram illustration of the workflow for the mixture-of-GAMs framework.
+</p>
+
+Figure 2 provides a schematic overview of the proposed mixture-of-GAMs workflow, highlighting the key computational stages and the features used throughout the manuscript.
+
+![Workflow](docs/figures/Workflow_2.png)
+<p align="center" style="font-size: 115%;">
+  <strong>Figure 2.</strong> Diagram illustration of the workflow for the mixture-of-GAMs framework.
+</p>
 
 ---
 
 ## 3. Results and Visualization
-The repository includes scripts for generating summary visualizations such as:
+Figure 3 shows the partial dependence plots for the RFF model, the global GAM, and the mixture-of-GAMs. The RFF model, which attains the lowest test RMSE, serves as a benchmark for comparison. The global GAM deviates more noticeably from the RFF curves, whereas the mixture-of-GAMs provides a closer alignment and yields improved predictive accuracy.
 
-- **RMSE comparisons** between RFF, global GAM, and Mixture-of-GAMs  
-- **Learned RFF frequency distributions**  
-- **PCA principal direction analysis**  
-- **Partial dependence plots** for local GAM components  
+![Workflow](docs/figures/PDP_Cal.png)
+<p align="center" style="font-size: 115%;">
+  <strong>Figure 3.</strong> Partial dependence plots for selected features of California Housing
+dataset.
+</p>
 
-Example figures (to be placed in `docs/figures/`):
+Figure 4 displays the spatial clusters derived from the RFF embedding of the latitude–longitude features. The cluster structure aligns with the inland–coastal gradient, reflecting the dominant geographic pattern associated with housing-price variation.
+
+![Workflow](docs/figures/Cal_clustering.png)
+<p align="center" style="font-size: 115%;">
+  <strong>Figure 4.</strong> Distributions of data points for each GMM cluster in the California housing dataset, based on explainable spatial Fourier features.
+</p>
+
+We also analyze the learned spatial frequencies using a density-weighted PCA, revealing a principal direction that aligns with the inland–coastal gradient and reflects the dominant spatial pattern in the dataset, as depicted in Figure 5.
+
+<!--
+![Workflow](docs/figures/spatial_frequency.png)
+-->
+<p align="center">
+  <img src="docs/figures/spatial_frequency.png" width="70%">
+</p>
+<p align="center" style="font-size: 115%;">
+  <strong>Figure 5.</strong> Scatter plot of the California Housing price data and the empirical histogram of learned two-dimensional spatial frequencies, together with the principal direction of variation obtained from a density–weighted PCA.
+</p>
+
+---
+
+## 4. Running the Experiments
+The numerical experiments on the California Housing dataset can be performed by navigating to the corresponding directory and executing the main script:
+
+```bash
+cd California_Housing_dataset/matlab
+run main_Cal_Housing_california.m
+```
+
+The corresponding workflow for the NASA Airfoil Self-Noise dataset is obtained by running:
+```bash
+cd Airfoil_Self_Noise_dataset/matlab
+run main_Airfoil_Self_Noise.m
+```
+
+A summary of the hyperparameter configurations for both datasets is provided in Table 1.
+<p align="center">
+  <img src="docs/figures/Hyperparameter_table.png" width="80%">
+</p>
+<p align="center" style="font-size: 115%;">
+  <strong>Table 1.</strong> Summary of hyperparameters used for the resampling-based RFF model and the Mixture-of-GAMs framework on the California Housing and Airfoil Self-Noise datasets.
+</p>
+
 
 <!--
 ```markdown
