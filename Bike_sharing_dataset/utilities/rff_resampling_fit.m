@@ -20,6 +20,7 @@ function [omega_used, beta_used, RMSE_test_final, RMSE_train_final, ci95] = ...
     for n = 1:num_resample
         mu_temp = zeros(1, d_xy);
         sigma_temp = C_mat_sample + epsilon_hat * eye(d_xy);
+        rng( 126 )
         zeta_mat = mvnrnd(mu_temp, sigma_temp, K);
         omega_rw = omega_sample + delta * zeta_mat;
 
@@ -119,7 +120,7 @@ function [omega_used, beta_used, RMSE_test_final, RMSE_train_final, ci95] = ...
     xlabel( 'Number of resampling iterations' );
     ylabel( 'Relative generalization error' );
 
-    savefig( fig_error, 'Error_with_n_after_RW.fig' );
+    % savefig( fig_error, 'Error_with_n_after_RW.fig' );
 	
 	
 	fig_ess = figure;
@@ -128,7 +129,7 @@ function [omega_used, beta_used, RMSE_test_final, RMSE_train_final, ci95] = ...
     xlabel( 'Number of resampling iterations' );
     ylabel( 'Effective sample size' );
 	
-	savefig( fig_ess, 'Effective_sample_size_with_n.fig' );
+	% savefig( fig_ess, 'Effective_sample_size_with_n.fig' );
 
     % Bootstrap
     S_mat_test = exp(1i * (XY_test_normal * omega_used'));

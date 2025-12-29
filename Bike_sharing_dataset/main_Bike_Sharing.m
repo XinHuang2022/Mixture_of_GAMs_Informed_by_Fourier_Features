@@ -100,8 +100,8 @@
 	omega_sample_time = omega_init;
 
 	%% Resampling/training settings (reuse your conventions)
-	num_resample = 300;
-	delta = 0.2;
+	num_resample = 500;
+	delta = 0.05;
 	Rel_Tol = 1e-3;
 	epsilon = 0;
 	epsilon_hat = 1e-3;
