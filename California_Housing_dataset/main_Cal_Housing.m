@@ -1,6 +1,4 @@
     
-	% Test the resampling idea with target function f(x) = sinint( v * x / a ) * exp( -|x|^2 / 2 ) or f(x) = exp( -|v * x| / a ) * exp( -|x|^2 / 2 )
-	
     clear
 
     %% load housing.csv
