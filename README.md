@@ -82,25 +82,39 @@ We also analyze the learned spatial frequencies using a density-weighted PCA, re
 ---
 
 ## 4. Running the Numerical Experiments
-The numerical implementations of the proposed Mixture-of-GAMs framework on the California Housing dataset can be performed by navigating to the corresponding directory and executing the main script:
+The numerical implementations of the proposed Mixture-of-GAMs framework on the *California Housing* dataset can be performed by navigating to the corresponding directory and executing the main script:
 
 ```bash
 cd California_Housing_dataset/matlab
 run main_Cal_Housing_california.m
 ```
 
-The corresponding workflow for the NASA Airfoil Self-Noise dataset is obtained by running:
+The corresponding workflow for the *NASA Airfoil Self-Noise* dataset is obtained by running:
 ```bash
 cd Airfoil_Self_Noise_dataset/matlab
 run main_Airfoil_Self_Noise.m
 ```
+
+For the *Bike Sharing* and *Kin40k* datasets, the locally specialized GAM components in the mixture-of-GAMs model are trained using the Python package `pyGAM`, which is accessed through MATLAB’s built-in Python interface.
+
+Before running the corresponding MATLAB scripts, please ensure that:
+
+(1). A Python virtual environment (recommended Python version 3.10) with the required dependencies (in particular, `pygam` and `numpy`) is available.
+
+(2). MATLAB is configured to use this environment via `pyenv` in out-of-process execution mode.
+
+In our implementation, the Python environment is initialized at the beginning of the main script using `pyenv`, after which `pyGAM` is imported and used to define spline and linear terms for training cluster-specific GAM predictive functions. No additional user intervention is required once the environment path is correctly specified.
+
+**Note:** The Python environment path in `pyenv` may need to be adapted to the local system. All other steps are handled automatically by the provided scripts.
+
+
 
 A summary of the hyperparameter configurations for both datasets is provided in Table 1.
 <p align="center">
   <img src="docs/figures/Hyperparameter_table.png" width="80%">
 </p>
 <p align="center" style="font-size: 115%;">
-  <strong>Table 1.</strong> Summary of hyperparameters used for the resampling-based RFF model and the Mixture-of-GAMs framework on the California Housing and Airfoil Self-Noise datasets.
+  <strong>Table 1.</strong> Summary of hyperparameters used for the resampling-based RFF model and the Mixture-of-GAMs framework on the California Housing, Airfoil Self-Noise, Bike-Sharing, and Kin40k datasets.
 </p>
 
 
