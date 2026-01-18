@@ -11,7 +11,7 @@ The code implements:
 - **Cluster-wise GAM fitting with smooth components**  
 - **Mixture prediction using posterior responsibilities**  
 
-The method is applied to two regression datasets:
+The method is applied to four regression datasets:
 - California Housing
 - NASA Airfoil Self-Noise
 - Bike Sharing
