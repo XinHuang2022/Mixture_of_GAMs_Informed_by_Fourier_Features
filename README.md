@@ -14,6 +14,8 @@ The code implements:
 The method is applied to two regression datasets:
 - California Housing
 - NASA Airfoil Self-Noise
+- Bike Sharing
+- Kin40k
 
 ---
 
