@@ -11,11 +11,13 @@ The code implements:
 - **Cluster-wise GAM fitting with smooth components**  
 - **Mixture prediction using posterior responsibilities**  
 
-The method is applied to four regression datasets:
+The method is applied to six regression datasets:
 - California Housing
 - NASA Airfoil Self-Noise
 - Bike Sharing
 - Kin40k
+- Elevators
+- Protein
 
 ---
 
@@ -91,13 +93,20 @@ cd California_Housing_dataset/matlab
 run main_Cal_Housing_california.m
 ```
 
-The corresponding workflow for the *NASA Airfoil Self-Noise* dataset is obtained by running:
+The corresponding workflow for the *NASA Airfoil Self-Noise* and *Protein* datasets can be implemented by running:
 ```bash
 cd Airfoil_Self_Noise_dataset/matlab
 run main_Airfoil_Self_Noise.m
 ```
 
-For the *Bike Sharing* and *Kin40k* datasets, the locally specialized GAM components in the mixture-of-GAMs model are trained using the Python package `pyGAM`, which is accessed through MATLAB’s built-in Python interface.
+or
+
+```bash
+cd Protein_dataset/matlab
+run main_Protein.m
+```
+
+For the *Bike Sharing*, *Kin40k*, and *Elevators* datasets, the locally specialized GAM components in the mixture-of-GAMs model are trained using the Python package `pyGAM`, which is accessed through MATLAB’s built-in Python interface.
 
 Before running the corresponding MATLAB scripts, please ensure that:
 
