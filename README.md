@@ -122,7 +122,7 @@ In our implementation, the Python environment is initialized at the beginning of
 
 A summary of the hyperparameter configurations for the numerical implementations on the four datasets is provided in Table 1.
 <p align="center">
-  <img src="docs/figures/Hyperparameter_table_new.png" width="70%">
+  <img src="docs/figures/Hyperparameter_table_new1.png" width="80%">
 </p>
 <p align="center" style="font-size: 115%;">
   <strong>Table 1.</strong> Summary of hyperparameters used for the resampling-based RFF model and the Mixture-of-GAMs framework on six benchmark regression datasets.
